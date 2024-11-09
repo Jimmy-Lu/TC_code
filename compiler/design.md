@@ -1,0 +1,37 @@
+- Pass 1: torch -> torch-graph
+  - use torch api torch.jit._get_trace_graph to get trace graph
+- Pass 2: torch-graph -> general-graph
+  - replace GOPs with corresponding scatter and gather
+  - remove non-compute ops
+- Pass 3: general-graph -> general-layers
+  - traverse the graph from GOPs
+    - classify op type: traverse from GOPs
+    - backward and forward
+  - split when a op process both src and dst
+- Pass 4: *(for each layer)* general-graph -> staged-code
+  - stage definition: scatter, gather, apply
+    - scatter-stage: pre-process dst
+    - gather-stage: *(may have multiple gather stages)*
+      - process src
+      - send src to edge
+      - send dst to edge
+      - process edge
+      - send edge to dst
+    - apply: post-process dst
+  - determine stages: **backward** scan
+    - start from apply-stage: 
+      - add all dst/src until edge
+    - then gather-stage:
+      - add all edge/src until dst
+    - finally scatter-stage:
+      - add all dst until src/edge
+  - generate code *(ordered list)*
+    - push op to the stage list at front
+  - gather-stage division
+    - starting a new gather-stage whenever encountering a gather-op
+- Pass 5: formalize staged code
+  - three-columns: opname, symbols, shapes
+  - memory-symbol: tensor-type+id
+    - vertex -> src / dst
+    - vertex -> src & dst
+  - op-shapes: all the shapes of the input and output tensors

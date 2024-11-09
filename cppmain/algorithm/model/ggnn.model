@@ -1,0 +1,36 @@
+Scatter
+NONE
+
+
+Gather
+LD_SRC                      S0
+SCTR_F      128,            E0,S0
+BMM         NE, 128, 128,   E0,E0,W0
+GTHR_F_SUM  128,            D0,E0
+
+
+GatherSimple
+LD_SRC                      S0
+SCTR_F      128,            E0,S0
+BMM         NE, 128, 128,   E0,E0,W0
+GTHR_F_SUM  128,            D0,E0
+
+
+Apply
+LD_DST                      D1
+
+GEMM        NDST, 128,128,  D1,D1,W1
+ADD_VV_W    NDST, 128,      D2,D1,W2
+GEMM        NDST, 128,128,  D0,D0,W3
+ADD_VV_W    NDST, 128,      D0,D0,W4
+ADD_VV_F    NDST, 128,      D1,D2,D0
+SIGMOID     NDST, 128,      D1,D1
+
+MUL_VV_F    NDST, 128,      D3,D1,D2
+ADD_VV_F    NDST, 128,      D3,D0,D3
+TANH        NDST, 128,      D3,D3
+
+MUL_VV_F    NDST, 128,      D3,D1,D3
+MUL_VV_F    NDST, 128,      D1,D1,D2
+ADD_VV_F    NDST, 128,      D1,D1,D3
+ST_DST                      D1

@@ -1,0 +1,5 @@
+[submodule "profiling/SGA-Code-PF"]
+	path = profiling/SGA-Code-Profile
+	url = ../SGA-Code-Profile.git
+	ignore = dirty
+

@@ -1,0 +1,25 @@
+Scatter
+LD_DST                          D0
+GEMV         NDST, 128,         D1,D0,W0
+
+
+Gather
+LD_SRC                          S0
+GEMV         NSRC, 128,         S1,S0,W1
+SCTR_F       1,                 E0,S1
+SCTR_F       1,                 E1,D1
+ADD_SS       NE,                E0,E0,E1
+RELU         NE, 1,             E0,E0
+EXP          NE, 1,             E0,E0
+GTHR_F_SUM   1,                 D2,E0
+
+GEMM         NSRC, 128, 128,    S0,S0,W2
+SCTR_F       128,               E2,S0
+MUL_VS       NE, 128,           E2,E2,E0
+GTHR_F_SUM   128,               D0,E2
+
+
+Apply
+DIV_VS       NDST, 128,         D0,D0,D2
+RELU         NDST, 128,         D0,D0
+ST_DST                          D0
